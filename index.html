@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1 anno con te</title>
+<style>
+/* RESET BASE */
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
+body{background:radial-gradient(circle at top,#6a0000,#000);color:#fff;overflow-x:hidden;}
+#hearts{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:5;}
+.heart{position:absolute;top:-10%;color:#ff4d6d;animation:fall linear infinite;opacity:.9;text-shadow:0 0 6px rgba(255,77,109,.8);}
+@keyframes fall{to{transform:translateY(120vh) rotate(360deg);}}
+
+#netflix-intro{position:fixed;inset:0;background:#000;display:none;justify-content:center;align-items:center;z-index:9999;overflow:hidden;}
+#netflix-intro span{color:#e50914;font-size:90px;font-weight:bold;letter-spacing:6px;animation:intro 2.2s ease forwards;}
+#netflix-intro .light{position:absolute;width:120px;height:120%;background:linear-gradient(to right,transparent,rgba(229,9,20,.9),transparent);left:-150px;animation:lightMove 2.2s ease forwards;}
+@keyframes intro{0%{opacity:0;transform:scale(.7)}30%{opacity:1}100%{opacity:0;transform:scale(1.2)}}
+@keyframes lightMove{0%{left:-150px}50%{left:50%}100%{left:120%}}
+
+/* SEZIONE INIZIALE */
+#movie{min-height:100vh;background:linear-gradient(to top,rgba(0,0,0,.9),rgba(0,0,0,.3)),url("foto.giulia-damiano.jpg") center/cover no-repeat;display:flex;align-items:flex-end;padding:40px;}
+.movie-box h1{font-size:38px;color:#e50914;}
+.movie-box p{color:#ccc;margin:14px 0 22px;}
+.play{background:#e50914;color:#fff;border:none;padding:14px 32px;border-radius:4px;cursor:pointer;}
+
+/* SEZIONE APP */
+#app{display:none;padding:30px 20px;}
+
+/* HERO IMAGE */
+.hero{max-width:380px;margin:0 auto;border-radius:14px;overflow:hidden;}
+.hero img{width:100%;}
+
+/* COUNTDOWN */
+#countdown{display:flex;justify-content:center;gap:14px;margin:40px 0;}
+.time-box{border:2px solid #e50914;padding:14px;border-radius:12px;text-align:center;box-shadow:0 0 20px rgba(229,9,20,.6);}
+.time-box span{font-size:28px;color:#e50914;font-weight:bold;}
+.time-box small{font-size:10px;color:#ccc;}
+
+/* CUBO */
+.cube-wrap{perspective:900px;width:220px;height:220px;margin:50px auto;}
+.cube{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:spin 16s linear infinite;}
+.face{position:absolute;width:100%;height:100%;border-radius:14px;overflow:hidden;}
+.face img{width:100%;height:100%;object-fit:cover;}
+.front{transform:rotateY(0) translateZ(110px);}
+.back{transform:rotateY(180deg) translateZ(110px);}
+.right{transform:rotateY(90deg) translateZ(110px);}
+.left{transform:rotateY(-90deg) translateZ(110px);}
+@keyframes spin{to{transform:rotateY(360deg);}}
+
+/* BADGE */
+.badges{max-width:900px;margin:60px auto;text-align:center;}
+.badges h2{color:#e50914;margin-bottom:20px;}
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:16px;}
+.badge{padding:16px 10px;border-radius:14px;background:#111;border:2px solid #333;opacity:.35;cursor:default;transition:.3s;text-align:center;}
+.badge.active{opacity:1;cursor:pointer;border-color:#e50914;box-shadow:0 0 20px rgba(229,9,20,.6);}
+.badge span{font-size:28px;}
+.badge strong{display:block;margin-top:6px;}
+
+/* NOTIFICA */
+.badge-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#e50914;color:#fff;padding:14px 22px;border-radius:30px;font-weight:bold;opacity:0;z-index:9999;transition:.4s;}
+.badge-toast.show{opacity:1}
+
+/* PLAYER VIDEO + AUDIO */
+.media-player{max-width:480px;margin:40px auto;background:#151515;padding:16px;border-radius:14px;display:flex;flex-direction:column;gap:12px;}
+.video-small{width:100%;border-radius:12px;cursor:pointer;}
+.track-info h3{color:#e50914;margin:0;font-size:20px;text-align:center;}
+.track-info p{color:#ccc;margin:0;font-size:14px;text-align:center;}
+.progress-container{display:flex;align-items:center;gap:10px;}
+#seekBar{flex:1;-webkit-appearance:none;height:8px;background:#333;border-radius:4px;cursor:pointer;}
+#seekBar::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#e50914;border-radius:50%;cursor:pointer;}
+#currentTime,#duration{color:#fff;font-size:12px;width:40px;text-align:center;}
+.controls{display:flex;gap:10px;justify-content:center;}
+.controls button{flex:1;padding:12px;background:#222;border:1px solid #333;color:#fff;border-radius:12px;font-size:16px;cursor:pointer;transition:.3s;font-weight:bold;text-transform:uppercase;}
+.controls button:hover{background:#e50914;transform:scale(1.05);}
+
+/* MODAL BADGE */
+#badgeModal {position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 10000; pointer-events: none;}
+#badgeModal .modal-overlay {position: absolute; inset: 0; background: rgba(0,0,0,0.7);}
+#badgeModal .modal-content {position: relative; background: #111; padding: 20px; border-radius: 14px; max-width: 320px; text-align: center; color: #fff; z-index: 10001; pointer-events: auto;}
+#badgeModal .modal-content img {width: 100%; border-radius: 12px; margin-bottom: 14px;}
+#badgeModal .modal-content p {margin-bottom: 14px; font-size: 14px;}
+#badgeModal .modal-close {position: absolute; top: 10px; right: 12px; background: #e50914; border: none; color: #fff; font-size: 16px; border-radius: 50%; width: 28px; height: 28px; cursor: pointer;}
+</style>
+</head>
+<body>
+
+<div id="hearts"></div>
+<div id="netflix-intro"><span>AMORE&nbsp;MIO</span><div class="light"></div></div>
+<audio id="audio" src="achille-lauro-16-marzo.mp3" loop></audio>
+
+<section id="movie">
+  <div class="movie-box">
+    <h1>1 anno con te</h1>
+    <p>Una storia che continua.</p>
+    <button class="play" onclick="start()">Play</button>
+  </div>
+</section>
+
+<div id="app">
+  <div class="hero"><img src="foto.giulia-damiano.jpg"></div>
+
+  <div id="countdown">
+    <div class="time-box"><span id="d">0</span><small>GIORNI</small></div>
+    <div class="time-box"><span id="h">0</span><small>ORE</small></div>
+    <div class="time-box"><span id="m">0</span><small>MINUTI</small></div>
+    <div class="time-box"><span id="s">0</span><small>SECONDI</small></div>
+  </div>
+
+  <div class="cube-wrap">
+    <div class="cube">
+      <div class="face front"><img src="cubo-1.jpeg"></div>
+      <div class="face back"><img src="cubo-2.jpeg"></div>
+      <div class="face right"><img src="foto3.jpg"></div>
+      <div class="face left"><img src="foto4.jpg"></div>
+    </div>
+  </div>
+
+  <div class="badges">
+    <h2>Badge Mensili</h2>
+    <div class="badge-grid" id="badgeGrid"></div>
+  </div>
+
+  <div class="media-player">
+    <video id="videoPlayer" src="video.mp4" class="video-small"></video>
+    <div class="track-info"><h3>16 Marzo</h3><p>Achille Lauro feat. Gow Tribe</p></div>
+    <div class="progress-container">
+      <span id="currentTime">0:00</span>
+      <input type="range" id="seekBar" min="0" max="100" value="0">
+      <span id="duration">0:00</span>
+    </div>
+    <div class="controls">
+      <button id="rewind">« 10s</button>
+      <button id="playPause">Play</button>
+      <button id="forward">10s »</button>
+      <button id="stop">Stop</button>
+    </div>
+  </div>
+</div>
+
+<div class="badge-toast" id="toast">🏅 Nuovo badge sbloccato!</div>
+
+<div id="badgeModal" style="display:none;">
+  <div class="modal-overlay"></div>
+  <div class="modal-content">
+    <button class="modal-close">✖</button>
+    <img id="modalImage" src="" alt="Badge" />
+    <p id="modalDesc">Descrizione badge</p>
+  </div>
+</div>
+
+<script>
+const intro=document.getElementById("netflix-intro");
+const movie=document.getElementById("movie");
+const app=document.getElementById("app");
+const audio=document.getElementById("audio");
+const video=document.getElementById("videoPlayer");
+const playPauseBtn=document.getElementById("playPause");
+const rewindBtn=document.getElementById("rewind");
+const forwardBtn=document.getElementById("forward");
+const stopBtn=document.getElementById("stop");
+const seekBar=document.getElementById("seekBar");
+const currentTimeEl=document.getElementById("currentTime");
+const durationEl=document.getElementById("duration");
+const hearts=document.getElementById("hearts");
+const badgeGrid=document.getElementById("badgeGrid");
+const toast=document.getElementById("toast");
+
+function start(){
+  intro.style.display="flex";
+  audio.currentTime=0; audio.play();
+  video.currentTime=0; video.play();
+  setTimeout(()=>{ intro.style.display="none"; movie.style.display="none"; app.style.display="block"; },2200);
+}
+
+setInterval(()=>{
+  const h=document.createElement("div");
+  h.className="heart"; h.innerHTML="❤";
+  h.style.left=Math.random()*100+"vw";
+  h.style.fontSize=14+Math.random()*20+"px";
+  h.style.animationDuration=4+Math.random()*4+"s";
+  hearts.appendChild(h); setTimeout(()=>h.remove(),8000);
+},300);
+
+const startDate=new Date("2025-02-04T00:00:00").getTime();
+setInterval(()=>{
+  const now=new Date().getTime();
+  const diff=now-startDate;
+  document.getElementById("d").textContent=Math.floor(diff/(1000*60*60*24));
+  document.getElementById("h").textContent=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+  document.getElementById("m").textContent=Math.floor((diff%(1000*60*60))/(1000*60));
+  document.getElementById("s").textContent=Math.floor((diff%(1000*60))/1000);
+},1000);
+
+const badgeData=[
+  {img:'mese 1.jpg',desc:'Badge Gennaio'},
+  {img:'foto2.jpg',desc:'Badge Febbraio'},
+  {img:'mese 3.jpeg',desc:'Badge Marzo'},
+  {img:'mese 4.jpeg',desc:'Badge Aprile'},
+  {img:'mese 5.jpg',desc:'Badge Maggio'},
+  {img:'foto6.jpg',desc:'Badge Giugno'},
+  {img:'mese 7.jpg',desc:'Badge Luglio'},
+  {img:'mese 8.jpg',desc:'Badge Agosto'},
+  {img:'mese 9.jpeg',desc:'Badge Settembre'},
+  {img:'mese 10.jpeg',desc:'Badge Ottobre'},
+  {img:'mese 11.jpeg',desc:'Badge Novembre'},
+  {img:'foto12.jpg',desc:'Badge Dicembre'}
+];
+
+badgeData.forEach((data,i)=>{
+  const b=document.createElement("div");
+  b.className="badge active";
+  b.innerHTML=`<span>${i+1}</span><strong>Mese</strong>`;
+  b.onclick=()=>{
+    toast.classList.add("show");
+    setTimeout(()=>toast.classList.remove("show"),1500);
+    const modal=document.getElementById("badgeModal");
+    document.getElementById("modalImage").src=data.img;
+    document.getElementById("modalDesc").textContent=data.desc;
+    modal.style.display="flex";
+  };
+  badgeGrid.appendChild(b);
+});
+
+document.querySelector("#badgeModal .modal-close").onclick=()=>{ document.getElementById("badgeModal").style.display="none"; };
+document.querySelector("#badgeModal .modal-overlay").onclick=()=>{ document.getElementById("badgeModal").style.display="none"; };
+
+function formatTime(sec){const m=Math.floor(sec/60);const s=Math.floor(sec%60);return `${m}:${s<10?'0'+s:s}`;}
+audio.addEventListener('loadedmetadata',()=>{seekBar.max=audio.duration;durationEl.textContent=formatTime(audio.duration);});
+audio.addEventListener('timeupdate',()=>{seekBar.value=audio.currentTime;currentTimeEl.textContent=formatTime(audio.currentTime);video.currentTime=audio.currentTime;});
+seekBar.addEventListener('input',()=>{audio.currentTime=seekBar.value;video.currentTime=audio.currentTime;});
+playPauseBtn.addEventListener('click',()=>{if(audio.paused){audio.play();video.play();playPauseBtn.textContent='Pausa';}else{audio.pause();video.pause();playPauseBtn.textContent='Play';}});
+rewindBtn.addEventListener('click',()=>{audio.currentTime=Math.max(0,audio.currentTime-10);video.currentTime=audio.currentTime;});
+forwardBtn.addEventListener('click',()=>{audio.currentTime=Math.min(audio.duration,audio.currentTime+10);video.currentTime=audio.currentTime;});
+stopBtn.addEventListener('click',()=>{audio.pause();video.pause();audio.currentTime=0;video.currentTime=0;playPauseBtn.textContent='Play';});
+video.addEventListener('click',()=>{if(audio.paused){audio.play();video.play();playPauseBtn.textContent='Pausa';}else{audio.pause();video.pause();playPauseBtn.textContent='Play';}});
+</script>
+
+</body>
+</html>
